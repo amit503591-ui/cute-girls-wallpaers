@@ -11,6 +11,8 @@ import {
   Sun,
   Moon,
   Play,
+  BookOpen,
+  Download,
 } from 'lucide-react';
 import { PWAInstallButton } from './PWAInstallButton';
 
@@ -28,6 +30,8 @@ interface NavbarProps {
   theme: 'dark' | 'light';
   toggleTheme: () => void;
   onStartSlideshow: () => void;
+  openReadmeModal: () => void;
+  onDownloadApk: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -44,6 +48,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   theme,
   toggleTheme,
   onStartSlideshow,
+  openReadmeModal,
+  onDownloadApk,
 }) => {
   const isDark = theme === 'dark';
 
@@ -88,7 +94,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Search bar on desktop */}
-          <div className="hidden md:flex flex-1 max-w-sm mx-4">
+          <div className="hidden md:flex flex-1 max-w-xs lg:max-w-sm mx-2 lg:mx-4">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
@@ -114,19 +120,43 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Right Action Icons & Badges */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Direct APK Download Button */}
+            <button
+              onClick={onDownloadApk}
+              title="Download Android APK directly"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs font-bold shadow-md shadow-emerald-500/20 active:scale-95 transition cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>APK</span>
+            </button>
+
+            {/* Readme / Guide Button */}
+            <button
+              onClick={openReadmeModal}
+              title="App Guide & Feature Documentation"
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition active:scale-95 cursor-pointer ${
+                isDark
+                  ? 'bg-slate-900 border-slate-800 text-pink-400 hover:bg-slate-800'
+                  : 'bg-slate-100 border-slate-200 text-pink-600 hover:bg-slate-200'
+              }`}
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Guide</span>
+            </button>
+
             {/* Ambient Slideshow button */}
             <button
               onClick={onStartSlideshow}
               title="Launch Ambient Slideshow"
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition active:scale-95 cursor-pointer ${
+              className={`hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition active:scale-95 cursor-pointer ${
                 isDark
                   ? 'bg-indigo-500/15 border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/25'
                   : 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100'
               }`}
             >
               <Play className="w-3.5 h-3.5 fill-current" />
-              <span className="hidden sm:inline">Slideshow</span>
+              <span>Slideshow</span>
             </button>
 
             {/* Dark / Light Mode Toggle */}
@@ -154,22 +184,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-pink-500' : ''}`} />
-            </button>
-
-            {/* Data Saver Mode toggle */}
-            <button
-              onClick={() => setIsDataSaver((prev) => !prev)}
-              title={isDataSaver ? 'Data Saver is ON (Saves mobile data)' : 'Data Saver is OFF'}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium border transition cursor-pointer ${
-                isDataSaver
-                  ? 'bg-amber-500/15 border-amber-500/40 text-amber-500 font-bold'
-                  : isDark
-                  ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
-                  : 'bg-slate-100 border-slate-200 text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Zap className={`w-3.5 h-3.5 ${isDataSaver ? 'text-amber-500 fill-amber-500' : ''}`} />
-              <span className="hidden sm:inline">Data Saver</span>
             </button>
 
             {/* Offline cache button */}

@@ -19,6 +19,7 @@ import { OfflineManagerModal } from './components/OfflineManagerModal';
 import { AlbumCard } from './components/AlbumCard';
 import { AlbumViewModal } from './components/AlbumViewModal';
 import { SlideshowModal } from './components/SlideshowModal';
+import { ReadmeModal } from './components/ReadmeModal';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { ScrollNavigation } from './components/ScrollNavigation';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
@@ -118,6 +119,17 @@ export default function App() {
   const [isOfflineModalOpen, setIsOfflineModalOpen] = useState(false);
   const [isSlideshowOpen, setIsSlideshowOpen] = useState(false);
   const [slideshowStartIndex, setSlideshowStartIndex] = useState(0);
+  const [isReadmeOpen, setIsReadmeOpen] = useState(false);
+
+  // Direct APK download function
+  const handleDownloadApk = () => {
+    const link = document.createElement('a');
+    link.href = '/api/download-apk';
+    link.setAttribute('download', 'CutePics-Android-v1.0.apk');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // Debounce search query
   useEffect(() => {
@@ -290,7 +302,10 @@ export default function App() {
           setSlideshowStartIndex(0);
           setIsSlideshowOpen(true);
         }}
+        openReadmeModal={() => setIsReadmeOpen(true)}
+        onDownloadApk={handleDownloadApk}
       />
+
 
       {/* COMPACT FILTER BAR - DIRECTLY SHOWS IMAGES RIGHT BELOW NAVBAR */}
       {currentTab === 'wallpapers' && modelFilters.length > 1 && (
@@ -766,6 +781,43 @@ export default function App() {
           }}
         />
       )}
+
+      {/* 6. In-App README & Feature Documentation Modal */}
+      <ReadmeModal
+        isOpen={isReadmeOpen}
+        onClose={() => setIsReadmeOpen(false)}
+        isDarkTheme={isDark}
+      />
+
+      {/* Clean Subtle Footer */}
+      <footer
+        className={`mt-auto border-t py-4 px-4 sm:px-6 transition-colors ${
+          isDark ? 'bg-slate-950 border-slate-900 text-slate-500' : 'bg-slate-100 border-slate-200 text-slate-600'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-pink-500">CutePics</span>
+            <span>• Android Portrait HD Wallpapers Companion</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsReadmeOpen(true)}
+              className="hover:underline flex items-center gap-1 text-pink-500 font-medium cursor-pointer"
+            >
+              App Guide (README)
+            </button>
+            <span>•</span>
+            <button
+              onClick={handleDownloadApk}
+              className="hover:underline flex items-center gap-1 text-emerald-500 font-medium cursor-pointer"
+            >
+              Download Android APK
+            </button>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
+

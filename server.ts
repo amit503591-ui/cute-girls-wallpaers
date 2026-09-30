@@ -319,10 +319,32 @@ app.get('/api/image-proxy', async (req: Request, res: Response) => {
   }
 });
 
+import { generateCutePicsApk } from './server/apkBuilder.js';
+import fs from 'fs';
+
+// Ensure public APK exists
+const APK_PUBLIC_PATH = path.resolve(__dirname, 'public', 'CutePics-Android-v1.0.apk');
+generateCutePicsApk(APK_PUBLIC_PATH);
+
+// Direct APK Download Endpoint
+const handleApkDownload = (_req: Request, res: Response) => {
+  if (!fs.existsSync(APK_PUBLIC_PATH)) {
+    generateCutePicsApk(APK_PUBLIC_PATH);
+  }
+  res.setHeader('Content-Type', 'application/vnd.android.package-archive');
+  res.setHeader('Content-Disposition', 'attachment; filename="CutePics-Android-v1.0.apk"');
+  res.setHeader('Cache-Control', 'public, max-age=86400');
+  return res.sendFile(APK_PUBLIC_PATH);
+};
+
+app.get('/api/download-apk', handleApkDownload);
+app.get('/CutePics-Android-v1.0.apk', handleApkDownload);
+
 // Health check
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', time: Date.now() });
 });
+
 
 async function startServer() {
   const isProd = process.env.NODE_ENV === 'production';
