@@ -1,7 +1,9 @@
 import express, { Request, Response } from 'express';
 import http from 'http';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { generateCutePicsApk } from './server/apkBuilder.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,6 +14,48 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 
 const FALLBACK_POSTS = [
+  {
+    id: 20516,
+    date: '2026-10-02T13:31:40',
+    slug: 'ajiang-voluptuous-silhouette',
+    link: 'https://cutepics.24x7.hk/',
+    title: '阿江的無敵豐盈上圍，令所有人目光無法移開',
+    featuredImage: 'https://img.photos18.com/images/image/3281/32810981.avif?0',
+    imagesCount: 10,
+    images: [
+      'https://img.photos18.com/images/image/3281/32810981.avif?0',
+      'https://img.photos18.com/images/image/3281/32810982.avif?0',
+      'https://img.photos18.com/images/image/3281/32810983.avif?0',
+      'https://img.photos18.com/images/image/3281/32810984.avif?0',
+      'https://img.photos18.com/images/image/3281/32810985.avif?0',
+      'https://img.photos18.com/images/image/3281/32810986.avif?0',
+      'https://img.photos18.com/images/image/3281/32810987.avif?0',
+      'https://img.photos18.com/images/image/3281/32810988.avif?0',
+      'https://img.photos18.com/images/image/3281/32810989.avif?0',
+      'https://img.photos18.com/images/image/3281/32810990.avif?0',
+    ],
+  },
+  {
+    id: 20514,
+    date: '2026-10-02T12:19:13',
+    slug: 'angela-zhang-curves',
+    link: 'https://cutepics.24x7.hk/',
+    title: '張安琪性感曲線惹火誘人！視角逆天',
+    featuredImage: 'https://img.photos18.com/images/image/3281/32810961.avif?0',
+    imagesCount: 10,
+    images: [
+      'https://img.photos18.com/images/image/3281/32810961.avif?0',
+      'https://img.photos18.com/images/image/3281/32810962.avif?0',
+      'https://img.photos18.com/images/image/3281/32810963.avif?0',
+      'https://img.photos18.com/images/image/3281/32810964.avif?0',
+      'https://img.photos18.com/images/image/3281/32810965.avif?0',
+      'https://img.photos18.com/images/image/3281/32810966.avif?0',
+      'https://img.photos18.com/images/image/3281/32810967.avif?0',
+      'https://img.photos18.com/images/image/3281/32810968.avif?0',
+      'https://img.photos18.com/images/image/3281/32810969.avif?0',
+      'https://img.photos18.com/images/image/3281/32810970.avif?0',
+    ],
+  },
   {
     id: 20502,
     date: '2026-09-30T14:22:25',
@@ -57,6 +101,7 @@ const FALLBACK_POSTS = [
     ],
   },
 ];
+
 
 function buildFallbackResult(page: number, perPage: number) {
   const allWallpapers: Array<{
@@ -142,6 +187,106 @@ function extractImagesFromContent(contentHtml: string): string[] {
   return Array.from(urls);
 }
 
+const inFlightRequests = new Map<string, Promise<any>>();
+
+async function fetchFromWordPress(page: number, perPage: number, search: string) {
+  const wpUrl = new URL('https://cutepics.24x7.hk/wp-json/wp/v2/posts');
+  // Avoid heavy _embed query which causes slow DB joins and timeouts
+  wpUrl.searchParams.set('_fields', 'id,date,slug,link,title,content');
+  wpUrl.searchParams.set('page', String(page));
+  wpUrl.searchParams.set('per_page', String(perPage));
+  if (search.trim()) {
+    wpUrl.searchParams.set('search', search.trim());
+  }
+
+  const response = await fetch(wpUrl.toString(), {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Mobile Safari/537.36',
+      Accept: 'application/json',
+    },
+    signal: AbortSignal.timeout(22000),
+  });
+
+  if (!response.ok) {
+    if (response.status === 400 && page > 1) {
+      return {
+        posts: [],
+        wallpapers: [],
+        page,
+        perPage,
+        totalPages: page - 1,
+        totalPosts: (page - 1) * perPage,
+      };
+    }
+    throw new Error(`WordPress API returned status ${response.status}`);
+  }
+
+  const totalPages = parseInt(response.headers.get('x-wp-totalpages') || '1', 10);
+  const totalPosts = parseInt(response.headers.get('x-wp-total') || '0', 10);
+  const data = await response.json();
+
+  if (!Array.isArray(data)) {
+    throw new Error('Expected array of posts');
+  }
+
+  const parsedPosts = data.map((post: any) => {
+    const title = decodeHtmlEntities(post.title?.rendered || 'Cute Wallpaper');
+    const contentImages = extractImagesFromContent(post.content?.rendered || '');
+    const featuredImage = contentImages.length > 0 ? contentImages[0] : '';
+
+    return {
+      id: post.id,
+      date: post.date,
+      slug: post.slug,
+      link: post.link,
+      title,
+      featuredImage,
+      imagesCount: contentImages.length,
+      images: contentImages,
+    };
+  });
+
+  const allWallpapers: Array<{
+    id: string;
+    originalUrl: string;
+    postId: number;
+    postTitle: string;
+    index: number;
+  }> = [];
+
+  parsedPosts.forEach((post) => {
+    post.images.forEach((imgUrl, index) => {
+      allWallpapers.push({
+        id: `${post.id}-${index}`,
+        originalUrl: imgUrl,
+        postId: post.id,
+        postTitle: post.title,
+        index,
+      });
+    });
+  });
+
+  return {
+    posts: parsedPosts,
+    wallpapers: allWallpapers,
+    page,
+    perPage,
+    totalPages,
+    totalPosts,
+  };
+}
+
+// Background cache pre-warm
+async function prewarmCache() {
+  try {
+    const result = await fetchFromWordPress(1, 12, '');
+    postsCache.set('posts:1:12:', { timestamp: Date.now(), data: result });
+    console.log('[Cache] Pre-warmed initial wallpaper set successfully');
+  } catch (e: any) {
+    console.warn('[Cache] Initial pre-warm failed, fallback ready:', e.message);
+  }
+}
+
 // Route: Get wallpaper posts
 app.get('/api/posts', async (req: Request, res: Response) => {
   const page = parseInt(req.query.page as string) || 1;
@@ -154,119 +299,35 @@ app.get('/api/posts', async (req: Request, res: Response) => {
     return res.json(cached.data);
   }
 
+  // Deduplicate concurrent requests
+  let fetchPromise = inFlightRequests.get(cacheKey);
+  if (!fetchPromise) {
+    fetchPromise = fetchFromWordPress(page, perPage, search)
+      .then((data) => {
+        postsCache.set(cacheKey, { timestamp: Date.now(), data });
+        inFlightRequests.delete(cacheKey);
+        return data;
+      })
+      .catch((error: any) => {
+        inFlightRequests.delete(cacheKey);
+        console.warn(`[WordPress API] Notice for ${cacheKey}: ${error.message}. Serving cached/fallback.`);
+        if (cached) return cached.data;
+        const page1Cache = postsCache.get('posts:1:12:');
+        if (page1Cache && page === 1 && !search) return page1Cache.data;
+        return buildFallbackResult(page, perPage);
+      });
+
+    inFlightRequests.set(cacheKey, fetchPromise);
+  }
+
   try {
-    const wpUrl = new URL('https://cutepics.24x7.hk/wp-json/wp/v2/posts');
-    wpUrl.searchParams.set('_embed', '1');
-    wpUrl.searchParams.set('page', String(page));
-    wpUrl.searchParams.set('per_page', String(perPage));
-    if (search.trim()) {
-      wpUrl.searchParams.set('search', search.trim());
-    }
-
-    const response = await fetch(wpUrl.toString(), {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Mobile Safari/537.36',
-        Accept: 'application/json',
-      },
-      signal: AbortSignal.timeout(12000),
-    });
-
-    if (!response.ok) {
-      if (response.status === 400 && page > 1) {
-        // WordPress returns 400 for out-of-range page
-        return res.json({
-          posts: [],
-          wallpapers: [],
-          page,
-          perPage,
-          totalPages: page - 1,
-          totalPosts: (page - 1) * perPage,
-        });
-      }
-      throw new Error(`WordPress API returned status ${response.status}`);
-    }
-
-    const totalPages = parseInt(response.headers.get('x-wp-totalpages') || '1', 10);
-    const totalPosts = parseInt(response.headers.get('x-wp-total') || '0', 10);
-    const data = await response.json();
-
-    if (!Array.isArray(data)) {
-      throw new Error('Expected array of posts');
-    }
-
-    const parsedPosts = data.map((post: any) => {
-      const title = decodeHtmlEntities(post.title?.rendered || 'Cute Wallpaper');
-      const featuredMedia = post._embedded?.['wp:featuredmedia']?.[0];
-      const featuredImage =
-        featuredMedia?.source_url ||
-        featuredMedia?.media_details?.sizes?.large?.source_url ||
-        featuredMedia?.media_details?.sizes?.full?.source_url ||
-        '';
-
-      const contentImages = extractImagesFromContent(post.content?.rendered || '');
-      
-      // Combine featured and content images, removing duplicates
-      const allImageUrls: string[] = [];
-      if (featuredImage) allImageUrls.push(featuredImage);
-      contentImages.forEach((url) => {
-        if (!allImageUrls.includes(url)) {
-          allImageUrls.push(url);
-        }
-      });
-
-      return {
-        id: post.id,
-        date: post.date,
-        slug: post.slug,
-        link: post.link,
-        title,
-        featuredImage,
-        imagesCount: allImageUrls.length,
-        images: allImageUrls,
-      };
-    });
-
-    // Flatten all wallpapers for individual browsing & collection viewing
-    const allWallpapers: Array<{
-      id: string;
-      originalUrl: string;
-      postId: number;
-      postTitle: string;
-      index: number;
-    }> = [];
-
-    parsedPosts.forEach((post) => {
-      post.images.forEach((imgUrl, index) => {
-        allWallpapers.push({
-          id: `${post.id}-${index}`,
-          originalUrl: imgUrl,
-          postId: post.id,
-          postTitle: post.title,
-          index,
-        });
-      });
-    });
-
-    const result = {
-      posts: parsedPosts,
-      wallpapers: allWallpapers,
-      page,
-      perPage,
-      totalPages,
-      totalPosts,
-    };
-
-    postsCache.set(cacheKey, { timestamp: Date.now(), data: result });
-    return res.json(result);
-  } catch (error: any) {
-    console.error('Error fetching WordPress posts:', error.message);
-    if (cached) {
-      return res.json(cached.data);
-    }
-    const fallback = buildFallbackResult(page, perPage);
-    return res.json(fallback);
+    const data = await fetchPromise;
+    return res.json(data);
+  } catch {
+    return res.json(buildFallbackResult(page, perPage));
   }
 });
+
 
 // Route: Image proxy to bypass CORS, provide long-term browser caching, and prevent hotlink blocking
 app.get('/api/image-proxy', async (req: Request, res: Response) => {
@@ -293,7 +354,7 @@ app.get('/api/image-proxy', async (req: Request, res: Response) => {
         Referer: 'https://cutepics.24x7.hk/',
         Accept: 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
       },
-      signal: AbortSignal.timeout(15000),
+      signal: AbortSignal.timeout(25000),
     });
 
     if (!response.ok) {
@@ -314,13 +375,10 @@ app.get('/api/image-proxy', async (req: Request, res: Response) => {
     const buffer = Buffer.from(arrayBuffer);
     return res.send(buffer);
   } catch (error: any) {
-    console.error('Image proxy error:', error.message);
+    console.warn('Image proxy warning:', error.message);
     return res.status(502).send('Error proxying image');
   }
 });
-
-import { generateCutePicsApk } from './server/apkBuilder.js';
-import fs from 'fs';
 
 // Ensure public APK exists
 const APK_PUBLIC_PATH = path.resolve(__dirname, 'public', 'CutePics-Android-v1.0.apk');
@@ -344,7 +402,6 @@ app.get('/CutePics-Android-v1.0.apk', handleApkDownload);
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', time: Date.now() });
 });
-
 
 async function startServer() {
   const isProd = process.env.NODE_ENV === 'production';
@@ -371,7 +428,11 @@ async function startServer() {
 
   server.listen(PORT, () => {
     console.log(`CutePics Wallpaper Studio server running on port ${PORT}`);
+    // Pre-warm cache after server starts listening
+    prewarmCache().catch(() => {});
+    setInterval(() => prewarmCache().catch(() => {}), 10 * 60 * 1000);
   });
 }
+
 
 startServer();

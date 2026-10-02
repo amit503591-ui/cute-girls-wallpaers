@@ -86,8 +86,9 @@ export const AlbumViewModal: React.FC<AlbumViewModalProps> = ({
             </div>
             <div className="min-w-0">
               <h3 className="text-base sm:text-lg font-bold truncate">
-                {post.title}
+                Photo Collection
               </h3>
+
               <p className="text-xs text-slate-400">
                 {wallpapers.length} Wallpapers in this album
               </p>

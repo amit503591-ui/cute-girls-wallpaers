@@ -294,22 +294,10 @@ export const AndroidWallpaperStudio: React.FC<AndroidWallpaperStudioProps> = ({
                   Material You
                 </span>
               </h2>
-              <p className="text-xs text-slate-400 truncate max-w-xs sm:max-w-md">
-                {wallpaper.postTitle}
-              </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowGuide(true)}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs transition cursor-pointer ${
-                isDarkTheme ? 'bg-slate-800 hover:bg-slate-700 text-slate-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-              }`}
-            >
-              <HelpCircle className="w-4 h-4 text-indigo-400" />
-              <span className="hidden sm:inline">Guide</span>
-            </button>
             <button
               onClick={onClose}
               className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
@@ -317,6 +305,7 @@ export const AndroidWallpaperStudio: React.FC<AndroidWallpaperStudioProps> = ({
               <X className="w-5 h-5" />
             </button>
           </div>
+
         </div>
 
         {/* Studio Body: Left is Simulator, Right is Controls */}
@@ -398,8 +387,9 @@ export const AndroidWallpaperStudio: React.FC<AndroidWallpaperStudioProps> = ({
                   <img
                     ref={previewImgRef}
                     src={proxyUrl}
-                    alt={wallpaper.postTitle}
+                    alt="Wallpaper"
                     className={`w-full h-full ${
+
                       settings.fit === 'cover'
                         ? 'object-cover'
                         : settings.fit === 'contain'

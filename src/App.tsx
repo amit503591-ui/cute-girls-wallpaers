@@ -19,8 +19,9 @@ import { OfflineManagerModal } from './components/OfflineManagerModal';
 import { AlbumCard } from './components/AlbumCard';
 import { AlbumViewModal } from './components/AlbumViewModal';
 import { SlideshowModal } from './components/SlideshowModal';
-import { ReadmeModal } from './components/ReadmeModal';
+import { AdBanner } from './components/AdBanner';
 import { OfflineIndicator } from './components/OfflineIndicator';
+
 import { ScrollNavigation } from './components/ScrollNavigation';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import {
@@ -119,9 +120,9 @@ export default function App() {
   const [isOfflineModalOpen, setIsOfflineModalOpen] = useState(false);
   const [isSlideshowOpen, setIsSlideshowOpen] = useState(false);
   const [slideshowStartIndex, setSlideshowStartIndex] = useState(0);
-  const [isReadmeOpen, setIsReadmeOpen] = useState(false);
 
   // Direct APK download function
+
   const handleDownloadApk = () => {
     const link = document.createElement('a');
     link.href = '/api/download-apk';
@@ -201,7 +202,9 @@ export default function App() {
         params.set('search', query.trim());
       }
 
-      const res = await fetch(`/api/posts?${params.toString()}`);
+      const res = await fetch(`/api/posts?${params.toString()}`, {
+        signal: AbortSignal.timeout(25000),
+      });
       if (!res.ok) {
         throw new Error(`Server returned HTTP ${res.status}`);
       }
@@ -222,19 +225,20 @@ export default function App() {
       setTotalPages(data.totalPages || 1);
       setTotalPosts(data.totalPosts || 0);
     } catch (err: any) {
-      console.error('Fetch error:', err);
+      console.warn('Fetch notice:', err?.message);
       if (!isOnline) {
         setError('Offline Mode: Browsing your cached offline wallpapers.');
         if (cachedWallpapers.length > 0 && currentTab === 'wallpapers') {
           setCurrentTab('offline');
         }
-      } else {
-        setError(err.message || 'Failed to load cute wallpapers.');
+      } else if (wallpapers.length === 0) {
+        setError('Connection slow or temporary network delay. Tap Retry to reload.');
       }
     } finally {
       setIsLoading(false);
       setIsLoadingMore(false);
     }
+
   }, [isOnline, cachedWallpapers.length, currentTab]);
 
   useEffect(() => {
@@ -302,9 +306,9 @@ export default function App() {
           setSlideshowStartIndex(0);
           setIsSlideshowOpen(true);
         }}
-        openReadmeModal={() => setIsReadmeOpen(true)}
         onDownloadApk={handleDownloadApk}
       />
+
 
 
       {/* COMPACT FILTER BAR - DIRECTLY SHOWS IMAGES RIGHT BELOW NAVBAR */}
@@ -357,7 +361,11 @@ export default function App() {
 
       {/* Main Content Area - Wallpapers immediately visible */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-4 sm:py-6">
+        {/* Ad Slot Above Images */}
+        <AdBanner isDarkTheme={isDark} className="mb-4" />
+
         {/* Error notification if any */}
+
         {error && (
           <div className="mb-4 p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-500 text-xs sm:text-sm flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
@@ -686,6 +694,8 @@ export default function App() {
             )}
           </div>
         )}
+        {/* Ad Slot Below Images */}
+        <AdBanner isDarkTheme={isDark} className="mt-6" />
       </main>
 
       {/* Offline Status Badge */}
@@ -782,13 +792,6 @@ export default function App() {
         />
       )}
 
-      {/* 6. In-App README & Feature Documentation Modal */}
-      <ReadmeModal
-        isOpen={isReadmeOpen}
-        onClose={() => setIsReadmeOpen(false)}
-        isDarkTheme={isDark}
-      />
-
       {/* Clean Subtle Footer */}
       <footer
         className={`mt-auto border-t py-4 px-4 sm:px-6 transition-colors ${
@@ -797,17 +800,9 @@ export default function App() {
       >
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-pink-500">CutePics</span>
-            <span>• Android Portrait HD Wallpapers Companion</span>
+            <span>Portrait HD Wallpapers</span>
           </div>
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => setIsReadmeOpen(true)}
-              className="hover:underline flex items-center gap-1 text-pink-500 font-medium cursor-pointer"
-            >
-              App Guide (README)
-            </button>
-            <span>•</span>
             <button
               onClick={handleDownloadApk}
               className="hover:underline flex items-center gap-1 text-emerald-500 font-medium cursor-pointer"
@@ -820,4 +815,5 @@ export default function App() {
     </div>
   );
 }
+
 

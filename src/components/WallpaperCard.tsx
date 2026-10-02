@@ -81,7 +81,7 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
         ) : (
           <img
             src={proxyUrl}
-            alt={wallpaper.postTitle}
+            alt="Wallpaper"
             loading="lazy"
             decoding="async"
             onLoad={() => setImageLoaded(true)}
@@ -91,6 +91,7 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
             }`}
           />
         )}
+
 
         {/* Top Badges */}
         <div className="absolute top-2 left-2 right-2 flex items-center justify-between pointer-events-none">
@@ -153,20 +154,7 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
           </button>
         </div>
       </div>
-
-      {/* Card Info Footer */}
-      <div
-        className={`p-2.5 flex items-center justify-between gap-2 border-t ${
-          isDarkTheme ? 'bg-slate-950/40 border-slate-800/60' : 'bg-slate-50 border-slate-100'
-        }`}
-      >
-        <p className="text-xs font-medium line-clamp-1 truncate" title={wallpaper.postTitle}>
-          {wallpaper.postTitle}
-        </p>
-        <span className="text-[10px] text-slate-400 whitespace-nowrap">
-          #{wallpaper.index + 1}
-        </span>
-      </div>
     </div>
   );
 };
+

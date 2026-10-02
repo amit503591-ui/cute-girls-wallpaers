@@ -30,7 +30,6 @@ interface NavbarProps {
   theme: 'dark' | 'light';
   toggleTheme: () => void;
   onStartSlideshow: () => void;
-  openReadmeModal: () => void;
   onDownloadApk: () => void;
 }
 
@@ -48,7 +47,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   theme,
   toggleTheme,
   onStartSlideshow,
-  openReadmeModal,
   onDownloadApk,
 }) => {
   const isDark = theme === 'dark';
@@ -62,7 +60,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Top Bar: Brand, Status, and Controls */}
         <div className="flex items-center justify-between h-16 gap-3">
-          {/* Logo & Brand */}
+          {/* Logo & Clean Title (No Website Name) */}
           <div className="flex items-center gap-3">
             <div className="relative flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-tr from-pink-500 via-purple-600 to-indigo-600 p-[1px] shadow-lg shadow-pink-500/20">
               <div
@@ -81,15 +79,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-bold text-base sm:text-lg tracking-tight flex items-center gap-1.5">
-                  CutePics{' '}
-                  <span className="text-pink-500 font-medium text-xs px-1.5 py-0.5 rounded bg-pink-500/10 border border-pink-500/20">
-                    Android
-                  </span>
+                  Wallpapers
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 font-normal hidden sm:block">
-                HD Wallpapers from cutepics.24x7.hk
-              </p>
             </div>
           </div>
 
@@ -131,19 +123,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span>APK</span>
             </button>
 
-            {/* Readme / Guide Button */}
-            <button
-              onClick={openReadmeModal}
-              title="App Guide & Feature Documentation"
-              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition active:scale-95 cursor-pointer ${
-                isDark
-                  ? 'bg-slate-900 border-slate-800 text-pink-400 hover:bg-slate-800'
-                  : 'bg-slate-100 border-slate-200 text-pink-600 hover:bg-slate-200'
-              }`}
-            >
-              <BookOpen className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Guide</span>
-            </button>
 
             {/* Ambient Slideshow button */}
             <button

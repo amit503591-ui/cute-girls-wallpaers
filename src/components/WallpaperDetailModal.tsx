@@ -126,10 +126,11 @@ export const WallpaperDetailModal: React.FC<WallpaperDetailModalProps> = ({
     setIsSharing(true);
 
     const shareData = {
-      title: `${wallpaper.postTitle} | CutePics HD Wallpaper`,
-      text: `Check out this cute portrait wallpaper: "${wallpaper.postTitle}"!`,
+      title: 'HD Portrait Wallpaper',
+      text: 'Check out this cute portrait wallpaper!',
       url: shareUrl,
     };
+
 
     // 1. Try Web Share API with image file attachment if supported
     if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
@@ -205,7 +206,7 @@ export const WallpaperDetailModal: React.FC<WallpaperDetailModalProps> = ({
 
   // Direct Social Share URLs
   const encodedUrl = encodeURIComponent(shareUrl);
-  const encodedText = encodeURIComponent(`Check out this cute wallpaper: ${wallpaper.postTitle}`);
+  const encodedText = encodeURIComponent('Check out this cute portrait wallpaper');
 
   const socialLinks = [
     {
@@ -243,16 +244,9 @@ export const WallpaperDetailModal: React.FC<WallpaperDetailModalProps> = ({
             isDarkTheme ? 'bg-slate-950/80 border-slate-800' : 'bg-slate-50 border-slate-200'
           }`}
         >
-          <div className="flex items-center gap-2 truncate">
-            <span className="font-semibold text-sm sm:text-base truncate">
-              {wallpaper.postTitle}
-            </span>
-            <span
-              className={`px-2 py-0.5 rounded-full text-xs font-mono ${
-                isDarkTheme ? 'bg-slate-800 text-slate-400' : 'bg-slate-200 text-slate-600'
-              }`}
-            >
-              #{wallpaper.index + 1}
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-sm sm:text-base">
+              Wallpaper #{wallpaper.index + 1}
             </span>
           </div>
 
@@ -313,10 +307,11 @@ export const WallpaperDetailModal: React.FC<WallpaperDetailModalProps> = ({
           <div className="relative max-h-[55vh] sm:max-h-[64vh] w-full flex items-center justify-center p-2">
             <img
               src={proxyUrl}
-              alt={wallpaper.postTitle}
+              alt="Wallpaper"
               className="max-h-[53vh] sm:max-h-[62vh] max-w-full object-contain rounded-xl shadow-2xl"
             />
           </div>
+
 
           {hasNext && onNext && (
             <button
@@ -363,10 +358,11 @@ export const WallpaperDetailModal: React.FC<WallpaperDetailModalProps> = ({
                 >
                   <img
                     src={getProxyImageUrl(rel.originalUrl)}
-                    alt={rel.postTitle}
+                    alt="Wallpaper"
                     className="w-full h-full object-cover"
                     loading="lazy"
                   />
+
                 </button>
               ))}
             </div>
