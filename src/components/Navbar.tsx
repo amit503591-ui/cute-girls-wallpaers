@@ -13,6 +13,7 @@ import {
   Play,
   BookOpen,
   Download,
+  QrCode,
 } from 'lucide-react';
 import { PWAInstallButton } from './PWAInstallButton';
 
@@ -31,6 +32,7 @@ interface NavbarProps {
   toggleTheme: () => void;
   onStartSlideshow: () => void;
   onDownloadApk: () => void;
+  onOpenApkQr: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -48,7 +50,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   toggleTheme,
   onStartSlideshow,
   onDownloadApk,
+  onOpenApkQr,
 }) => {
+
   const isDark = theme === 'dark';
 
   return (
@@ -123,8 +127,22 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span>APK</span>
             </button>
 
+            {/* QR Code Scan to Download */}
+            <button
+              onClick={onOpenApkQr}
+              title="Scan QR Code to download APK on Android"
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition active:scale-95 cursor-pointer ${
+                isDark
+                  ? 'bg-slate-900 border-emerald-500/30 text-emerald-400 hover:bg-slate-800'
+                  : 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'
+              }`}
+            >
+              <QrCode className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">QR Scan</span>
+            </button>
 
             {/* Ambient Slideshow button */}
+
             <button
               onClick={onStartSlideshow}
               title="Launch Ambient Slideshow"

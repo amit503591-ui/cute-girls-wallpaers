@@ -9,6 +9,7 @@ import {
   HardDriveDownload,
   Filter,
   Play,
+  QrCode,
 } from 'lucide-react';
 import { WallpaperItem, PostItem, ResolutionQuality } from './types';
 import { Navbar } from './components/Navbar';
@@ -20,7 +21,9 @@ import { AlbumCard } from './components/AlbumCard';
 import { AlbumViewModal } from './components/AlbumViewModal';
 import { SlideshowModal } from './components/SlideshowModal';
 import { AdBanner } from './components/AdBanner';
+import { ApkQrModal } from './components/ApkQrModal';
 import { OfflineIndicator } from './components/OfflineIndicator';
+
 
 import { ScrollNavigation } from './components/ScrollNavigation';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
@@ -120,8 +123,10 @@ export default function App() {
   const [isOfflineModalOpen, setIsOfflineModalOpen] = useState(false);
   const [isSlideshowOpen, setIsSlideshowOpen] = useState(false);
   const [slideshowStartIndex, setSlideshowStartIndex] = useState(0);
+  const [isApkQrOpen, setIsApkQrOpen] = useState(false);
 
   // Direct APK download function
+
 
   const handleDownloadApk = () => {
     const link = document.createElement('a');
@@ -307,7 +312,9 @@ export default function App() {
           setIsSlideshowOpen(true);
         }}
         onDownloadApk={handleDownloadApk}
+        onOpenApkQr={() => setIsApkQrOpen(true)}
       />
+
 
 
 
@@ -792,6 +799,14 @@ export default function App() {
         />
       )}
 
+      {/* 6. Scan QR Code to Download APK Modal */}
+      <ApkQrModal
+        isOpen={isApkQrOpen}
+        onClose={() => setIsApkQrOpen(false)}
+        onDownloadApk={handleDownloadApk}
+        isDarkTheme={isDark}
+      />
+
       {/* Clean Subtle Footer */}
       <footer
         className={`mt-auto border-t py-4 px-4 sm:px-6 transition-colors ${
@@ -804,6 +819,14 @@ export default function App() {
           </div>
           <div className="flex items-center gap-3">
             <button
+              onClick={() => setIsApkQrOpen(true)}
+              className="hover:underline flex items-center gap-1.5 text-emerald-500 font-medium cursor-pointer"
+            >
+              <QrCode className="w-3.5 h-3.5" />
+              <span>Scan QR Code</span>
+            </button>
+            <span>•</span>
+            <button
               onClick={handleDownloadApk}
               className="hover:underline flex items-center gap-1 text-emerald-500 font-medium cursor-pointer"
             >
@@ -815,5 +838,6 @@ export default function App() {
     </div>
   );
 }
+
 
 
