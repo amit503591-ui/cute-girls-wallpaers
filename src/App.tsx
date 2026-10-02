@@ -335,7 +335,7 @@ export default function App() {
                 <button
                   key={tag}
                   onClick={() => setActiveModelFilter(tag)}
-                  className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
+                  className={`px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
                     activeModelFilter === tag
                       ? 'bg-pink-500 text-white shadow-sm'
                       : isDark
@@ -348,20 +348,11 @@ export default function App() {
               ))}
             </div>
 
-            {/* Quick Count & Slideshow Button */}
+            {/* Quick Count */}
             <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400 whitespace-nowrap">
               <span>{displayedWallpapers.length} Wallpapers</span>
-              <button
-                onClick={() => {
-                  setSlideshowStartIndex(0);
-                  setIsSlideshowOpen(true);
-                }}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-pink-500/10 text-pink-500 hover:bg-pink-500/20 font-semibold cursor-pointer"
-              >
-                <Play className="w-3 h-3 fill-current" />
-                <span>Play Slideshow</span>
-              </button>
             </div>
+
           </div>
         </div>
       )}
