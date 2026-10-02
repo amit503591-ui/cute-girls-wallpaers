@@ -98,14 +98,20 @@ export const ApkQrModal: React.FC<ApkQrModalProps> = ({
             )}
           </div>
 
-          {/* Device Instructions */}
-          <div className="mt-4 flex items-center gap-2 text-xs text-slate-400 font-medium text-center">
+        {/* Device Instructions */}
+        <div className="mt-4 space-y-2 text-center">
+          <div className="flex items-center justify-center gap-2 text-xs text-slate-300 font-medium">
             <Smartphone className="w-4 h-4 text-emerald-400 flex-shrink-0" />
             <span>Point your Android phone camera at the QR code to install</span>
           </div>
+          <div className="text-[11px] text-slate-400 bg-slate-800/50 rounded-xl p-2.5 border border-slate-700/50">
+            <span className="font-semibold text-emerald-400">Fixed Parse Error:</span> Fully compiled &amp; signed Android APK (Android 5.0 to 14+). If prompted, enable <span className="text-white font-medium">&quot;Install unknown apps&quot;</span> in Settings.
+          </div>
         </div>
+      </div>
 
         {/* Action Buttons */}
+
         <div className="grid grid-cols-2 gap-3 pt-2">
           <button
             onClick={onDownloadApk}
